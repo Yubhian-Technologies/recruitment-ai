@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FairHire AI — Unbiased Recruitment Analyzer</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⚖</span>
+        <span class="logo-text">FairHire <span class="logo-ai">AI</span></span>
+      </div>
+      <p class="tagline">Skill-based. Bias-free. Transparent recruitment analysis.</p>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Input Section -->
+    <section class="card input-card" id="inputSection">
+      <h2 class="section-title">Evaluate Candidate Fit</h2>
+
+      <form id="analyzeForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="jobDescription">Job Description <span class="required">*</span></label>
+          <textarea
+            id="jobDescription"
+            name="job_description"
+            rows="7"
+            placeholder="Paste the full job description here — including required skills, responsibilities, and qualifications..."
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Resume <span class="required">*</span></label>
+          <div class="resume-tabs">
+            <button type="button" class="tab-btn active" data-tab="paste">Paste Text</button>
+            <button type="button" class="tab-btn" data-tab="upload">Upload File</button>
+          </div>
+
+          <div id="tab-paste" class="tab-content active">
+            <textarea
+              id="resumeText"
+              name="resume_text"
+              rows="9"
+              placeholder="Paste the candidate's resume text here..."
+            ></textarea>
+          </div>
+
+          <div id="tab-upload" class="tab-content">
+            <div class="upload-zone" id="uploadZone">
+              <div class="upload-icon">📄</div>
+              <p>Drag & drop or <label class="upload-label" for="resumeFile">browse file</label></p>
+              <p class="upload-hint">Supports PDF, DOCX, TXT — max 10MB</p>
+              <input type="file" id="resumeFile" name="resume_file" accept=".pdf,.docx,.txt" hidden />
+              <div id="fileChosen" class="file-chosen hidden"></div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-analyze" id="analyzeBtn">
+          <span class="btn-text">Analyze Candidate</span>
+          <span class="btn-loader hidden">Analyzing<span class="dots"></span></span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Error Banner -->
+    <div id="errorBanner" class="error-banner hidden"></div>
+
+    <!-- Results Section -->
+    <section id="resultsSection" class="hidden">
+
+      <!-- Verdict + Score Row -->
+      <div class="results-top">
+        <div class="card verdict-card">
+          <p class="card-label">Overall Verdict</p>
+          <div id="verdictBadge" class="verdict-badge"></div>
+          <p id="verdictReason" class="verdict-reason"></p>
+        </div>
+        <div class="card score-card">
+          <p class="card-label">Job Match Score</p>
+          <div class="score-ring-wrap">
+            <svg class="score-ring" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="50" />
+              <circle id="ringFill" class="ring-fill" cx="60" cy="60" r="50"
+                stroke-dasharray="314" stroke-dashoffset="314" />
+            </svg>
+            <div class="score-center">
+              <span id="fitScore" class="score-number">0</span>
+              <span class="score-pct">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="card chance-card">
+          <p class="card-label">Hiring Probability</p>
+          <div id="chanceLabel" class="chance-label"></div>
+          <div class="chance-bar-wrap">
+            <div class="chance-bar-track">
+              <div id="chanceBar" class="chance-bar" style="width:0%"></div>
+            </div>
+            <span id="chancePct" class="chance-pct">0%</span>
+          </div>
+          <p id="experienceGap" class="exp-gap"></p>
+        </div>
+      </div>
+
+      <!-- Skills Row -->
+      <div class="results-skills">
+        <div class="card">
+          <h3 class="card-title green">✓ Matched Skills</h3>
+          <div id="matchedSkills" class="skill-tags"></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title red">✗ Missing Skills</h3>
+          <div id="missingSkills" class="skill-tags"></div>
+        </div>
+      </div>
+
+      <!-- Skills to Improve -->
+      <div class="card" id="improveCard">
+        <h3 class="card-title orange">📈 Skills to Improve</h3>
+        <div id="improveList" class="improve-list"></div>
+      </div>
+
+      <!-- Strengths & Recommendations -->
+      <div class="results-skills">
+        <div class="card">
+          <h3 class="card-title blue">★ Strengths</h3>
+          <ul id="strengthsList" class="bullet-list"></ul>
+        </div>
+        <div class="card">
+          <h3 class="card-title purple">→ Recommendations</h3>
+          <ul id="recommendationsList" class="bullet-list"></ul>
+        </div>
+      </div>
+
+      <!-- Bias Transparency Panel -->
+      <div class="card bias-card">
+        <h3 class="card-title">⚖ Bias & Fairness Report</h3>
+        <p class="bias-intro">
+          FairHire AI evaluates candidates purely on skills and qualifications.
+          Below is a transparency log for this analysis.
+        </p>
+        <div class="bias-grid">
+          <div class="bias-item">
+            <span class="bias-label">Resume — Ignored Attributes</span>
+            <p id="biasResume" class="bias-value"></p>
+          </div>
+          <div class="bias-item">
+            <span class="bias-label">Job Description — Language Check</span>
+            <p id="biasJD" class="bias-value"></p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-reset" id="resetBtn">← Analyze Another Candidate</button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>FairHire AI · Powered by Google Gemini · Built for GCP · Decisions are skill-based only</p>
+  </footer>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
