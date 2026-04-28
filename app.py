@@ -3,7 +3,8 @@ import json
 import io
 from flask import Flask, request, jsonify, render_template
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import PyPDF2
 from docx import Document
 
@@ -12,8 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB max upload
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash-preview-04-17")
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 
 def extract_text_from_pdf(file_bytes):
@@ -111,7 +111,10 @@ def analyze():
     )
 
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
         raw = response.text.strip()
         # Strip markdown code fences if present
         if raw.startswith("```"):
