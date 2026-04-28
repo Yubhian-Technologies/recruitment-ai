@@ -78,6 +78,11 @@ Respond with a valid JSON object (no markdown, no extra text) in this exact stru
 """
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return "", 204
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
